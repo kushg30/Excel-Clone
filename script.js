@@ -4,10 +4,10 @@ let defaultProperties={
     "font-style": "",
     "text-decoration": "",
     "text-align": "left",
-    "background-color": "white",
-    "color": "black",
+    "background-color": "#ffffff",
+    "color": "#000000",
     "font-family": "Noto Sans",
-    "font-size": 14
+    "font-size": "14px"
 }
 
 let cellData={
@@ -16,6 +16,7 @@ let cellData={
 
 let selectedSheet ="Sheet1";
 let totalSheets = 1;
+let lastlyAddedSheet = 1;
 
 $(document).ready(function () {
     let cellContainer = $(".input-cell-container");
@@ -111,8 +112,11 @@ for(let i =1 ; i <= 100; i++){
     let alignment = cellInfo["text-align"];
     $(".align-icon.selected").removeClass("selected");
     $(".icon-align-" + alignment).addClass("selected");
-       
-    
+    $(".background-color-picker").val(cellInfo["background-color"]);
+    $(".text-color-picker").val(cellInfo["color"]); 
+    $(".font-family-selector").val(cellInfo["font-family"]);
+    $(".font-family-selector").css("font-family", cellInfo["font-family"]);
+    $(".font-size-selector").val(cellInfo["font-size"]);
 
  }
 
@@ -124,8 +128,9 @@ for(let i =1 ; i <= 100; i++){
  })
 
  $(".input-cell").blur(function(){
-     $(".input-cell.selected").attr("contenteditable","false");
- })
+    $(".input-cell.selected").attr("contenteditable","false");
+    updateCell("text", $(this).text());
+    });
 
  $(".input-cell-container").scroll(function(){
      $(".column-name-container").scrollLeft(this.scrollLeft);
@@ -208,3 +213,95 @@ $(".icon-align-right").click(function(){
         updateCell("text-align","right",true);
     }
 });
+
+$(".color-fill-icon").click(function(){
+    $(".background-color-picker").click();
+});
+
+$(".color-fill-text").click(function(){
+    $(".text-color-picker").click();
+});
+
+$(".background-color-picker").change(function(){
+    updateCell("background-color", $(this).val());
+})
+
+$(".text-color-picker").change(function(){
+    updateCell("color", $(this).val());
+})
+
+$(".font-family-selector").change(function(){
+    updateCell("font-family", $(this).val());
+    $(".font-family-selector").css("font-family", $(this).val());
+});
+
+$(".font-size-selector").change(function(){
+    updateCell("font-size", $(this).val());
+});
+
+function emptySheet(){
+    let sheetInfo = cellData[selectedSheet];
+    for(let i of Object.keys(sheetInfo)){
+        for(let j of Object.keys(sheetInfo[i])){
+            $(`#row-${i}-col-${j}`).text("");
+            $(`#row-${i}-col-${j}`).css("background-color","#ffffff");
+            $(`#row-${i}-col-${j}`).css("color","#000000");
+            $(`#row-${i}-col-${j}`).css("text-align","left");
+            $(`#row-${i}-col-${j}`).css("font-weight","");
+            $(`#row-${i}-col-${j}`).css("font-style","");
+            $(`#row-${i}-col-${j}`).css("text-decoration","");
+            $(`#row-${i}-col-${j}`).css("font-family","Noto Sans");
+            $(`#row-${i}-col-${j}`).css("font-size","14px");
+                 
+        }
+    }
+}
+
+function loadSheet(){
+    let sheetInfo = cellData[selectedSheet];
+    for(let i of Object.keys(sheetInfo)){
+        for(let j of Object.keys(sheetInfo[i])){
+            let cellInfo = cellData[selectedSheet][i][j];
+            $(`#row-${i}-col-${j}`).text(cellInfo["text"]);
+            $(`#row-${i}-col-${j}`).css("background-color",cellInfo["background-color"]);
+            $(`#row-${i}-col-${j}`).css("color",cellInfo["color"]);
+            $(`#row-${i}-col-${j}`).css("text-align",cellInfo["text-align"]);
+            $(`#row-${i}-col-${j}`).css("font-weight",cellInfo["font-weight"]);
+            $(`#row-${i}-col-${j}`).css("font-style",cellInfo["font-style"]);
+            $(`#row-${i}-col-${j}`).css("text-decoration",cellInfo["text-decoration"]);
+            $(`#row-${i}-col-${j}`).css("font-family",cellInfo["font-family"]);
+            $(`#row-${i}-col-${j}`).css("font-size",cellInfo["font-size"]);
+                 
+        }
+    }
+}
+
+$(".icon-add").click(function(){
+    emptySheet();
+    $(".sheet-tab.selected").removeClass("selected"); 
+    let sheetName = "Sheet" + (lastlyAddedSheet + 1);
+    cellData[sheetName] = {};
+    totalSheets += 1;
+    lastlyAddedSheet += 1;
+    selectedSheet = sheetName;
+    $(".sheet-tab-container").append(`<div class="sheet-tab selected">${sheetName}</div>`);
+    $(".sheet-tab.selected").click(function(){
+        if(!$(this).hasClass("selected")){
+            selectSheet(this);
+        }
+    });
+});
+
+$(".sheet-tab").click(function(){
+    if(!$(this).hasClass("selected")){
+        selectSheet(this);
+    }
+});
+
+function selectSheet(ele){
+    $(".sheet-tab.selected").removeClass("selected");
+    $(ele).addClass("selected");
+    emptySheet();
+    selectedSheet = $(ele).text();
+    loadSheet();
+}
